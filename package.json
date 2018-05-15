@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "descripton": "HTML inheritance parser and compiler. Allowing for components to be imported and the HTML modified without changes to the source.",
   "main": "index.js",
-  "repository": "https://github.com/AdaptivElite/ESNextWebServer",
+  "repository": "https://github.com/AdaptivElite/ihtml",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,6 +18,6 @@
   "dependencies": {
     "jquery": "^3.3.1",
     "jsdom": "^11.7.0",
-	"bnf": "^1.0.0"
+    "bnf": "^1.0.0"
   }
 }
