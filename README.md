@@ -13,7 +13,7 @@ HTML inheritance parser and compiler.
   }
 
   block{
-    
+
   }
 ```
 
@@ -68,3 +68,5 @@ cssQuery {
 * Multipal blocks in root of script
 * Event attributes
 * Comments
+* Bind attributes only support set operations
+* Replace assignment operation
