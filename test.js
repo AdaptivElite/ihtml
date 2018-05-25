@@ -26,10 +26,12 @@ const ihtmlSource = `
     style = 'margin-bottom: 15px;'
     *[ref='input']{
       class = 'form-control'
+
       :class = \`{
         'is-valid' : hasValidation && initialBlur && isValid,
         'is-invalid' : hasValidation && initialBlur && !isValid
       }\`
+      
     }
     div.invalid{
       class = 'invalid-feedback'
