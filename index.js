@@ -1,6 +1,8 @@
 const { GenerateCompiler } = require( "./ihtmlCompiler.js" );
 const { CompileHtml } = require( "./htmlCompiler.js" );
 
+const compiler = GenerateCompiler();
+
 function _ConvertBodyElement( element ){
   let output = [];
 
@@ -44,7 +46,7 @@ module.exports = {
       rootBlocks : []
     };
 
-    let compiler = GenerateCompiler();
+    
     compiler.ParseScript( source.trim(), parserSavedData );
 
     let buildProcess = [];

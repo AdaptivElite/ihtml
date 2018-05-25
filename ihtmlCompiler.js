@@ -18,23 +18,25 @@ const ihtmlBnf = `
   <SYNTAX> ::= <from> 1*( <CRLF> <ANYWSP> <block> )
     <from> ::= "from" <WSP> <fromPath>
       <fromPath> ::= <LITERAL>
-      <block> ::= "@" <OWSP> <cssQuery> <OWSP> "{" <CRLF> *( <WSP> <bodyElement> <CRLF> ) <OWSP> "}"
+      <block> ::= <OWSP> <cssQuery> <OWSP> "{" <CRLF> *( <ANYWSP> <bodyElement> <CRLF> ) <OWSP> "}"
         <cssQuery> ::= 1*<cssQueryChar>
         ; This can be improved to make sure css syntax is accurate, or not.
         <cssQueryChar> ::= ( %x20-3e | %x41-7a | %x7c | %x7e ) ; Basicly anything except for '?', '@', '{', and '}'.
         <bodyElement> ::= <typeChange> | <attributeChange> | <bindingChange> | <wrapper> | <block>
-          <typeChange> ::= "type" <OWSP> <changeApplication> <OWSP> <elementString>
-          <attributeChange> ::= "@@" <elementString> <OWSP> <changeApplication> <OWSP> <changeValue>
-          <bindingChange> ::= "@:" <elementString> <OWSP> "{{" <jsString> "}}" <mergeStrategy>
-            <mergeStrategy> ::= "." ( "set" | "new" | "ex" )
-            <jsString> ::= *( %x09-0a | %x0d | %x20-7c | %x7e | !"}}." %x7d )
-          <wrapper> ::= "todo"
+          <typeChange> ::= "&:type" <OWSP> <changeApplication> <OWSP> <elementString>
+          <attributeChange> ::= <elementString> <OWSP> <changeApplication> <OWSP> <changeValue>
+          <bindingChange> ::= ":" <elementString> <OWSP> <bindChangeApplication> <OWSP> <jsValue>
+		    <jsValue> ::= <ANYLITERAL>
+          <wrapper> ::= "&:wrap" <WSP> <elementString>
+		  <remove> ::= "&:delete" <WSP> <cssQuery>
+		<bindChangeApplication> ::= <merge> | <changeApplication>
         <changeApplication> ::= <set> | <append> | <prepend> | <replace>
         <changeValue> ::= <LITERAL>
           <set> ::= "="
           <append> ::= "=+"
           <prepend> ::= "+="
           <replace> ::= "todo"
+		  <merge> ::= "^="
         <elementString> ::= <ALPHA> *( <ALPHA> | <DIGIT> | "-" | "_" )
 `;
 
@@ -82,12 +84,18 @@ module.exports = {
           value : token.value
         };
         switch( bodyData.type ){
+          case "wrapper":
+		    break;
           case "bindingChange":
             bodyData.value = {
               bindingAttribute : token.Child( "elementString" ).value,
-              mergeStrategy : token.Child( "mergeStrategy" ).value.substring( 1 ),
-              boundValue : token.Child( "jsString" ).value.replace( /[\n\t\r]/g, "" ).trim()
+              mergeStrategy : token.Child( "bindChangeApplication" ),
+              boundValue : ""
             };
+			
+			let boundValue = token.Child( "jsValue" ).value.replace( /[\n\t\r]/g, "" ).trim();
+			boundValue = boundValue.substring( 1, boundValue.length - 1 );
+			bodyData.value.boundValue = boundValue;
             break;
           case "typeChange":
             bodyData.value = {

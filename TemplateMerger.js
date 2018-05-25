@@ -126,7 +126,7 @@ class Node{
   BindMerge( bindingAttribute, mergeObject, mergeStrategy ){
     this.element.each( ( index, element ) => {
       if( !this.$( element ).attr( ":" + bindingAttribute ) ){
-        this.$( element ).attr( ":" + bindingAttribute, "{" + mergeObject + "}" );
+        this.$( element ).attr( ":" + bindingAttribute, mergeObject );
       }
     });
 
