@@ -1,3 +1,5 @@
+let innerContext = 0;
+
 class Attr{
 
   constructor( attributeName, node, jqueryContext ){
@@ -111,16 +113,38 @@ class Node{
     return this;
   }
 
-  Wrap( newParent ){
+  AddElement( newElement ){
+    let wrapContext = innerContext++;
+    this.element.each( ( index, element ) => {
+      let newNode = this.$( "<" + newElement + ">" );
+      newNode.attr( "__IHTML_HOOK__", wrapContext );
+      this.$(element).append( newNode );
+    } );
 
-    console.log( "THIS METHOD NEEDS TO BE REFACTRED BASED ON THE TYPESET" );
+    return new Node( this.$( "[__IHTML_HOOK__='" + wrapContext + "']", this.element ), this, this.$, this );
+  }
 
-    let parentNode = this.$( newParent );
-    this.element.after( parentNode );
-    parentNode.append( this.element );
-    this._templateMerge.templateElement = parentNode;
+  RemoveElement( removeQuery ){
+    this.element.each( ( index, element ) => {
+      this.$(removeQuery, element ).remove();
+    } );
 
     return this;
+  }
+
+  WrapElement( newParent ){
+
+    let wrapContext = innerContext++;
+    let wrapParent = this.element.parent();
+    this.element.each( ( index, element ) => {
+      let parentNode = this.$( "<" + newParent + ">" );
+      parentNode.attr( "__IHTML_HOOK__", wrapContext );
+      this.$(element).after( parentNode );
+      parentNode.append( element );
+    } );
+    
+    return new Node( this.$( "[__IHTML_HOOK__='" + wrapContext + "']", wrapParent ), this, this.$, this );
+
   }
 
   BindMerge( bindingAttribute, mergeObject, mergeStrategy ){
@@ -138,6 +162,9 @@ class Node{
   }
 
   Apply(){
+    this.element.each( ( index, element ) => {
+      this.$( element ).removeAttr( "__IHTML_HOOK__" );
+    } );
     return this._parentNode || this._templateMerge;
   }
 

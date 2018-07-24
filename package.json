@@ -1,6 +1,6 @@
 {
   "name": "ihtml",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "descripton": "HTML inheritance parser and compiler. Allowing for components to be imported and the HTML modified without changes to the source.",
   "main": "index.js",
   "repository": "https://github.com/AdaptivElite/ihtml",

@@ -15,20 +15,22 @@ const javaScriptBnf = `
 `;
 
 const ihtmlBnf = `
-  <SYNTAX> ::= <from> 1*( <CRLF> <ANYWSP> <block> )
+  <SYNTAX> ::= <from> 1*( <CRLF> <ANYWSP> 1*( <block> ) )
     <from> ::= "from" <WSP> <fromPath>
       <fromPath> ::= <LITERAL>
-      <block> ::= <OWSP> <cssQuery> <OWSP> "{" <CRLF> *( <ANYWSP> <bodyElement> <CRLF> ) <OWSP> "}"
+      <block> ::= <OWSP> <cssQuery> <innerBlock>
+      <innerBlock> ::= <OWSP> "{" <CRLF> *( <ANYWSP> <bodyElement> <CRLF> ) <OWSP> "}"
         <cssQuery> ::= 1*<cssQueryChar>
         ; This can be improved to make sure css syntax is accurate, or not.
-        <cssQueryChar> ::= ( %x20-3e | %x41-7a | %x7c | %x7e ) ; Basicly anything except for '?', '@', '{', and '}'.
-        <bodyElement> ::= <typeChange> | <attributeChange> | <bindingChange> | <wrapper> | <block>
-          <typeChange> ::= "&:type" <OWSP> <changeApplication> <OWSP> <elementString>
+        <cssQueryChar> ::= ( %x20-23 | %x25-3e | %x41-7a | %x7c | %x7e ) ; Basicly anything except for '$', '?', '@', '{', and '}'.
+        <bodyElement> ::= <typeChange> | <attributeChange> | <bindingChange> | <wrapElement> | <removeElement> | <addElement> | <block>
+          <typeChange> ::= "$type" <OWSP> <changeApplication> <OWSP> <elementString>
           <attributeChange> ::= <elementString> <OWSP> <changeApplication> <OWSP> <changeValue>
           <bindingChange> ::= ":" <elementString> <OWSP> <bindChangeApplication> <OWSP> <jsValue>
 		    <jsValue> ::= <ANYLITERAL>
-          <wrapper> ::= "&:wrap" <WSP> <elementString>
-		  <remove> ::= "&:delete" <WSP> <cssQuery>
+      <wrapElement> ::= "$wrap" <WSP> <elementString> [ <innerBlock> ]
+      <removeElement> ::= "$remove" <WSP> <cssQuery>
+      <addElement> ::= "$add" <WSP> <elementString> [ <innerBlock> ]
 		<bindChangeApplication> ::= <merge> | <changeApplication>
         <changeApplication> ::= <set> | <append> | <prepend> | <replace>
         <changeValue> ::= <LITERAL>
@@ -60,7 +62,7 @@ module.exports = {
         if( bodyElement === null ){
           dataObject.rootBlocks.push( {
             scan : token.scan,
-            bodyElements : token.bodyElements
+            bodyElements : token.Child( "innerBlock" ).bodyElements
           });
         }
       },
@@ -77,15 +79,30 @@ module.exports = {
           }
         };
 
-        let block = token.Parent( "block" );
+        let block = token.Parent( "innerBlock" );
         block.bodyElements = block.bodyElements || [];
         let bodyData = {
           type : token.tokens[0].name,
           value : token.value
         };
         switch( bodyData.type ){
-          case "wrapper":
-		    break;
+          case "wrapElement":
+            bodyData.value = {
+              element : token.Child( "elementString" ).value,
+              bodyElements : token.Child( "innerBlock" ).bodyElements || []
+            };
+            break;
+          case "addElement":
+            bodyData.value = {
+              element : token.Child( "elementString" ).value,
+              bodyElements : token.Child( "innerBlock" ).bodyElements || []
+            };
+            break;
+          case "removeElement":
+            bodyData.value = {
+              element : token.Child( "cssQuery" ).value
+            };
+            break;
           case "bindingChange":
             bodyData.value = {
               bindingAttribute : token.Child( "elementString" ).value,
@@ -93,9 +110,9 @@ module.exports = {
               boundValue : ""
             };
 			
-			let boundValue = token.Child( "jsValue" ).value.replace( /[\n\t\r]/g, "" ).trim();
-			boundValue = boundValue.substring( 1, boundValue.length - 1 );
-			bodyData.value.boundValue = boundValue;
+            let boundValue = token.Child( "jsValue" ).value.replace( /[\n\t\r]/g, "" ).trim();
+            boundValue = boundValue.substring( 1, boundValue.length - 1 );
+            bodyData.value.boundValue = boundValue;
             break;
           case "typeChange":
             bodyData.value = {
@@ -114,7 +131,7 @@ module.exports = {
           case "block":
             bodyData.value = {
               scan : token.tokens[0].scan,
-              bodyElements : token.tokens[0].bodyElements
+              bodyElements : token.Child( "innerBlock" ).bodyElements || []
             };
             break;
         }

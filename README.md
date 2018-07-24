@@ -36,12 +36,12 @@ Blocks are operations performed on elements from a CSS query. A element can be s
 * @string : Event attributes have a prepended '@'
 
 ## Element Operations
-`&:operation = element-string`
-* &:type : Changes the type for the selected elements.
-* &:remove : Deletes the selected elements. Does not require element-string.
-* &:wrap : Wraps the element inside a new element.
-* &:add : Adds a new element inside the current elements. Can use prepend assignment.
-* &:content : Sets the value of the html inside the element, must be a string literal.
+`$operation = element-string`
+* $type : Changes the type for the selected elements.
+* $remove : Deletes the selected elements. Does not require element-string.
+* $wrap : Wraps the element inside a new element.
+* $add : Adds a new element inside the current elements. Can use prepend assignment.
+* $content : Sets the value of the html inside the element, must be a string literal.
 
 ## Anatomy of blocks
 ```
@@ -49,11 +49,15 @@ cssQuery {
   attribute = "value"
   :boundAttribute = "{ value : true }"
   @eventAttribute = "CallMethod()"
-  &:type = type-change
-  &:remove
-  &:wrap = element-wrap
-  &:add = element-append
-  &:content = "html of component"
+  $type = type-change
+  $remove div.removed
+  $wrap = element-wrap { 
+    class = 'wrap class'
+  }
+  $add = element-append {
+    style = 'color:red;'
+  }
+  $content = "html of component"
   cssQuery {
     attribute = "value"
   }[0] 
@@ -61,9 +65,6 @@ cssQuery {
 ```
 
 ## Current missing features from syntax
-* Operation remove
-* Operation wrap
-* Operation add
 * Operation content
 * Multipal blocks in root of script
 * Event attributes

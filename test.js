@@ -14,7 +14,8 @@ const html = `
 		</div>
 		<div v-if="hasValidation && invalidMessage !== null" class="invalid">
 		  {{ invalidMessage }}
-		</div>
+    </div>
+    <div class="removeme">FART</div>
 		<div v-if="about" class="about"> {{ about }}</div>
 	  </section>
 	</template>
@@ -31,7 +32,11 @@ const ihtmlSource = `
         'is-valid' : hasValidation && initialBlur && isValid,
         'is-invalid' : hasValidation && initialBlur && !isValid
       }\`
-      
+    }
+
+    $remove .removeme
+    $add added {
+      class = 'test'
     }
     div.invalid{
       class = 'invalid-feedback'
@@ -40,9 +45,19 @@ const ihtmlSource = `
       class = 'valid-feedback'
     }
     div.about{
-      &:type = small
+      $type = small
+      $wrap big {
+        class = 'i am huge'
+        $wrap outmore {
+          style = 'color: red'
+        }
+      }
       class = 'form-text text-muted'
     }
+  }
+
+  section{
+    class = 'test'
   }
 `;
 
